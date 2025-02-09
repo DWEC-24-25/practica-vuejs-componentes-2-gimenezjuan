@@ -38,12 +38,46 @@ const server_data = {
 };
 
 // Componente edit-form
-const EditForm = defineComponent({
-    template: `
-        <div>
-            <h2>Edit Form</h2>
-            <!-- Aquí iría el formulario de edición -->
+const EditForm = Vue.defineComponent({
+    props: {
+        itemdata: {
+            type: Array,
+            required: true
+        },
+        index: {
+            type: Number,
+            required: false
+        }
+    },
+    methods: {
+        closeForm() {
+            this.$emit('formClosed');
+        }
+    }, template: `
+    <div>
+        <h2>Edit Form</h2>
+        <form>
+        <div 
+            v-for="(field, idx) in itemdata" 
+            :key="field.name" 
+            class="mb-3"
+        >
+            <label 
+            :for="'field-' + (index !== undefined ? index : 0) + '-' + field.name" 
+            class="form-label"
+            >
+            {{ field.prompt }}
+            </label>
+            <input 
+            type="text" 
+            class="form-control" 
+            :id="'field-' + (index !== undefined ? index : 0) + '-' + field.name" 
+            v-model="field.value"
+            >
         </div>
+        <button type="button" class="btn btn-secondary" @click="closeForm">Cerrar</button>
+        </form>
+    </div>
     `
 });
 
@@ -70,7 +104,6 @@ const ItemData = defineComponent({
 const app = createApp({
     setup() {
         const col = reactive(server_data.collection);
-
         return {
             col
         };
