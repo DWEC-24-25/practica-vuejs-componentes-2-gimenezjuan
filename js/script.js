@@ -38,41 +38,110 @@ const server_data = {
 };
 
 // Componente edit-form
-const EditForm = defineComponent({
-    template: `
-        <div>
-            <h2>Edit Form</h2>
-            <!-- Aquí iría el formulario de edición -->
+const EditForm = Vue.defineComponent({
+    props: {
+        itemdata: {
+            type: Array,
+            required: true
+        },
+        index: {
+            type: Number,
+            required: false
+        }
+    },
+    methods: {
+        closeForm() {
+            this.$emit('formClosed');
+        }
+    }, template: `
+    <div>
+        <h2>Edit Form</h2>
+        <form>
+        <div 
+            v-for="(field, idx) in itemdata" 
+            :key="field.name" 
+            class="mb-3"
+        >
+            <label 
+            :for="'field-' + (index !== undefined ? index : 0) + '-' + field.name" 
+            class="form-label"
+            >
+            {{ field.prompt }}
+            </label>
+            <input 
+            type="text" 
+            class="form-control" 
+            :id="'field-' + (index !== undefined ? index : 0) + '-' + field.name" 
+            v-model="field.value"
+            >
         </div>
+        <button type="button" class="btn btn-secondary" @click="closeForm">Cerrar</button>
+        </form>
+    </div>
     `
 });
 
 // Componente item-data
-const ItemData = defineComponent({
+const ItemData = Vue.defineComponent({
     props: {
         item: {
-            type: Object,
-            required: true
+        type: Object,
+        required: true
+        },
+        index: {
+        type: Number,
+        required: false
+        }
+    },
+    data() {
+        return {
+        editing: false
+        };
+    },
+    methods: {
+        toggleEditFormVisibility() {
+        this.editing = !this.editing;
         }
     },
     template: `
         <div>
-            <h3>{{ item.data.find(d => d.name === 'name').value }}</h3>
-            <p>{{ item.data.find(d => d.name === 'description').value }}</p>
-            <p><strong>Director:</strong> {{ item.data.find(d => d.name === 'director').value }}</p>
-            <p><strong>Release Date:</strong> {{ item.data.find(d => d.name === 'datePublished').value }}</p>
-            <a :href="item.href" target="_blank">More Info</a>
+        <div v-if="!editing">
+            <dl>
+            <template v-for="field in item.data" :key="field.name">
+                <dt>{{ field.prompt }}</dt>
+                <dd>{{ field.value }}</dd>
+            </template>
+            </dl>
+            <a 
+            :href="item.href" 
+            class="btn btn-primary" 
+            target="_blank"
+            >
+            Ver
+            </a>
+            <button 
+            class="btn btn-secondary ms-2" 
+            @click="toggleEditFormVisibility"
+            >
+            Editar
+            </button>
+        </div>
+        <div v-else>
+            <edit-form 
+            :itemdata="item.data" 
+            :index="index" 
+            @formClosed="toggleEditFormVisibility"
+            ></edit-form>
+        </div>
         </div>
     `
 });
 
 // Crear la aplicación Vue
-const app = createApp({
-    setup() {
-        const col = reactive(server_data.collection);
-
-        return {
-            col
+const app = Vue.createApp({
+    data() {
+        return { 
+        col: server_data
         };
     }
 });
